@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang=en>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1.0">
+<title>chmod.guru - the chmod permission generator</title>
+<style>
+	html {
+		font-family: Cascadia, Consolas, "Courier New", Courier, monospace;
+		background-color: #1a1a1a;
+		color: #fff;
+	}
+
+	header {
+		text-align: center;
+		padding: 1em;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: 200px 1fr 1fr 1fr;
+		grid-template-rows: 1fr 1fr 1fr;
+		justify-content: center;
+		margin: 0 auto;
+		max-width: 70dvw;
+		translate: -100px 0;
+	}
+
+	.code {
+		padding: 16px;
+		background-color: #222;
+		font-size: 20px;
+	}
+
+	#r,
+	#w,
+	#x {
+		text-align: right;
+	}
+
+	label,
+	button {
+		padding: 4px;
+
+		cursor: pointer;
+		background-color: transparent;
+		border: none;
+		text-align: center;
+		color: #a8a8a8;
+		text-transform: lowercase;
+		font-size: 20px;
+
+		&:hover {
+			background-color: #333333;
+		}
+	}
+
+	a, a:visited {
+		color: #4e94ce;
+		text-decoration: none;
+	}
+	a:hover {
+		text-decoration: underline;
+	}
+
+	.highlight {
+		color: #fff;
+		border-bottom: 1px solid #aaa;
+	}
+
+	.info {
+		padding: 8px;
+
+		display: flex;
+		flex-direction: column;
+		margin: 0 auto;
+		max-width: 70dvw;
+		text-align: center;
+		gap: 16px;
+	}
+
+	.large {
+		font-size: 40px;
+	}
+
+	@keyframes checkmarkAnimation {
+		0% {
+			height: 0;
+			width: 0;
+			opacity: 0;
+		}
+
+		40% {
+			height: 0;
+			width: calc(var(--icon-size) * 0.3);
+			opacity: 1;
+		}
+
+		100% {
+			opacity: 1;
+			height: calc(var(--icon-size) / 2);
+		}
+	}
+
+	label {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		input {
+			display: none;
+		}
+	}
+
+	.comment {
+		color: #6a9955;
+	}
+	.demo {
+		color: #a8a8a8;
+	}
+
+	.status {
+		display: block;
+	}
+
+	footer {
+		color: #a8a8a8;
+		margin: 0 auto;
+		max-width: max(50dvw, 300px);
+		width: fit-content;
+
+		code {
+			font-weight: bold;
+			color: #fff;
+		}
+		ul {
+			list-style-type: none;
+		}
+	}
+
+	:root {
+		--icon-size: 40px;
+	}
+
+	label>input:not(:checked)+.status {
+		width: var(--icon-size);
+		height: var(--icon-size);
+		border-radius: calc(var(--icon-size) / 2);
+		background: #ff4b4b;
+		position: relative;
+
+		transform: scale(1) rotate(45deg);
+		opacity: 1;
+		transition:
+			transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+			opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+			background-color 0.3s ease-out;
+
+		@starting-style {
+			transform: scale(0) rotate(45deg);
+			opacity: 0;
+		}
+
+		&:after,
+		&:before {
+			content: '';
+			position: absolute;
+			border-radius: calc(var(--icon-size) * 0.15);
+			background: #fff;
+			bottom: calc(var(--icon-size) * 0.45);
+			left: calc(var(--icon-size) * 0.2);
+			height: calc(var(--icon-size) * 0.1);
+			width: calc(var(--icon-size) * 0.6);
+
+			transform: scale(1);
+			opacity: 1;
+
+			transition:
+				transform 0.3s ease-out,
+				opacity 0.3s ease-out;
+			transition-delay: 50ms;
+
+			@starting-style {
+				transform: scale(0);
+				opacity: 0;
+			}
+		}
+
+		&:before {
+			transition:
+				transform 0.3s ease-out,
+				opacity 0.3s ease-out;
+			transition-delay: 80ms;
+
+			transform: scale(1) rotate(90deg);
+			opacity: 1;
+
+			@starting-style {
+				transform: scale(0) rotate(90deg);
+				opacity: 0;
+			}
+		}
+	}
+
+	label>input:checked+.status {
+		width: var(--icon-size);
+		opacity: 0;
+		height: var(--icon-size);
+		border-radius: calc(var(--icon-size) / 2);
+		background: #61d345;
+		position: relative;
+
+		transform: scale(1) rotate(45deg);
+		opacity: 1;
+		transition:
+			transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+			opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+			background-color 0.3s ease-out;
+
+		@starting-style {
+			transform: scale(0) rotate(45deg);
+			opacity: 0;
+		}
+
+		&:after {
+			content: '';
+			box-sizing: border-box;
+			animation: checkmarkAnimation 0.2s ease-out forwards;
+			opacity: 0;
+			animation-delay: 100ms;
+			position: absolute;
+			border-right: calc(var(--icon-size) * 0.1) solid;
+			border-bottom: calc(var(--icon-size) * 0.1) solid;
+			border-color: #fff;
+			bottom: calc(var(--icon-size) * 0.3);
+			left: calc(var(--icon-size) * 0.3);
+			height: calc(var(--icon-size) / 2);
+			width: calc(var(--icon-size) * 0.3);
+		}
+	}
+</style>
+
+<header>
+	<h1>chmod.guru</h1>
+	<p>
+		The quick and simple editor for unix file permissions.<br>
+		Read more on <a href="https://en.wikipedia.org/wiki/Chmod">Wikipedia</a>.
+</header>
+
+<main class="grid">
+	<button type=button id=all title="Toggle all permissions"></button>
+	<button type=button id=u title="Toggle all user permissions"><span class=highlight>U</span>ser</button>
+	<button type=button id=g title="Toggle all group permissions"><span class=highlight>G</span>roup</button>
+	<button type=button id=o title="Toggle all public permissions"><span class=highlight>O</span>ther</button>
+
+	<button type=button id=r title="Toggle all read permissions"><span class=highlight>R</span>ead</button>
+	<label title="User's read permission"><input type=checkbox name=ur id=ur><span class=status></span></label>
+	<label title="Group's read permission"><input type=checkbox name=gr id=gr><span class=status></span></label>
+	<label title="Public's read permission"><input type=checkbox name=or id=or><span class=status></span></label>
+
+	<button type=button id=w title="Toggle all write permissions"><span class=highlight>W</span>rite</button>
+	<label title="User's write permission"><input type=checkbox name=uw id=uw><span class=status></span></label>
+	<label title="Group's write permission"><input type=checkbox name=gw id=gw><span class=status></span></label>
+	<label title="Public's write permission"><input type=checkbox name=ow id=ow><span class=status></span></label>
+
+	<button type=button id=x title="Toggle all execute permissions">E<span class=highlight>x</span>ecute</button>
+	<label title="User's execute permission"><input type=checkbox name=ux id=ux><span class=status></span></label>
+	<label title="Group's execute permission"><input type=checkbox name=gx id=gx><span class=status></span></label>
+	<label title="Public's execute permission"><input type=checkbox name=ox id=ox><span class=status></span></label>
+</main>
+<div class=info>
+	<div class=large><span id=resultSymbolic></span></div>
+	<div>
+		<div class=code>
+			<code>chmod 0<span id=setResultNumeric></span> <span inert class=demo>&lt;file&gt;</span><span inert class=comment> # <b>set</b> permissions</span></code>
+		</div>
+		<div class=code>
+			<code>chmod <span id=setResultAlphabetic></span> <span inert class=demo>&lt;file&gt;</span><span inert class=comment> # <b>set</b> permissions</span></code>
+		</div>
+		<div class=code>
+			<code>chmod <span id=resultAdd></span> <span inert class=demo>&lt;file&gt;</span><span inert class=comment> # <b>add</b> permissions</span></code>
+		</div>
+	</div>
+	<div>
+		Find the code on <a href="https://github.com/nikeee/chmod.guru">GitHub</a>.
+	</div>
+</div>
+<footer>
+	<p>When applying these permissions to a directory instead of a file:
+		<ul>
+			<li><code>r</code> allows to <b>list</b> the directory contents
+			<li><code>w</code> allows to <b>create, rename, or delete files</b> in the directory
+			<li><code>x</code> allows to <b>enter</b> the directory
+		</ul>
+</footer>
+
+<script type=module>
+	const options = { passive: true };
+	const userPerms = [ur, uw, ux]; const groupPerms = [gr, gw, gx]; const publicPerms = [or, ow, ox];
+	const readPerms = [ur, gr, or]; const writePerms = [uw, gw, ow]; const execPerms = [ux, gx, ox];
+	const allPerms = [...userPerms, ...groupPerms, ...publicPerms];
+	const toggle = e => e.checked = !e.checked;
+	const value = e => e.checked ? 1 : 0;
+	const symbol = (e, s, fallback = "-") => e.checked ? s : fallback;
+
+	u.addEventListener("click", () => { userPerms.forEach(toggle); update(); }, options);
+	g.addEventListener("click", () => { groupPerms.forEach(toggle); update(); }, options);
+	o.addEventListener("click", () => { publicPerms.forEach(toggle); update(); }, options);
+	r.addEventListener("click", () => { readPerms.forEach(toggle); update(); }, options);
+	w.addEventListener("click", () => { writePerms.forEach(toggle); update(); }, options);
+	x.addEventListener("click", () => { execPerms.forEach(toggle); update(); }, options);
+	all.addEventListener("click", () => { allPerms.forEach(toggle); update(); });
+
+	allPerms.forEach(e => e.addEventListener("change", update, options));
+	window.addEventListener("hashchange", update, options);
+
+	document.addEventListener("keydown", e => {
+		switch(e.key) {
+			case "u": u.click(); break;
+			case "g": g.click(); break;
+			case "o": o.click(); break;
+			case "r": r.click(); break;
+			case "w": w.click(); break;
+			case "x": x.click(); break;
+			case "a": allPerms.forEach(e => e.click()); break;
+			default: return;
+		}
+	});
+
+	if (document.location.hash) {
+		const permissions = parseInt(document.location.hash.slice(1), 8);
+		if (Number.isSafeInteger(permissions) && permissions >= 0 && permissions <= 0o777) {
+			set(permissions);
+		}
+	} else {
+		set(0o755);
+	}
+	update();
+
+	function update() {
+		const permission = 0
+			| (value(ur) << 8)
+			| (value(uw) << 7)
+			| (value(ux) << 6)
+			| (value(gr) << 5)
+			| (value(gw) << 4)
+			| (value(gx) << 3)
+			| (value(or) << 2)
+			| (value(ow) << 1)
+			| (value(ox) << 0);
+
+		const octal = permission.toString(8).padStart(3, "0");
+		if (octal !== setResultNumeric.textContent) {
+			document.location.hash = octal;
+			setResultNumeric.textContent = octal;
+			resultSymbolic.textContent = ""
+				+ symbol(ur, "r") + symbol(uw, "w") +symbol(ux, "x")
+				+ symbol(gr, "r") + symbol(gw, "w") +symbol(gx, "x")
+				+ symbol(or, "r") + symbol(ow, "w") +symbol(ox, "x");
+
+			const addUser = symbol(ur, "r", "") + symbol(uw, "w", "") +symbol(ux, "x", "");
+			const addGroup = symbol(gr, "r", "") + symbol(gw, "w", "") +symbol(gx, "x", "");
+			const addOther = symbol(or, "r", "") + symbol(ow, "w", "") +symbol(ox, "x", "");
+
+			resultAdd.textContent = addUser === addGroup && addUser === addOther
+				? `a+${addUser}`
+				: [
+					(addUser.length > 0 ? `u+${addUser}` : ""),
+					(addGroup.length > 0 ? `g+${addGroup}` : ""),
+					(addOther.length > 0 ? `o+${addOther}` : ""),
+				].filter(a => a.length > 0).join(",");
+
+			setResultAlphabetic.textContent = addUser === addGroup && addUser === addOther
+				? `a=${addUser}`
+				: [
+					(addUser.length > 0 ? `u=${addUser}` : "u="),
+					(addGroup.length > 0 ? `g=${addGroup}` : "g="),
+					(addOther.length > 0 ? `o=${addOther}` : "o="),
+				].filter(a => a.length > 0).join(",")
+		}
+	}
+	function set(permissions) {
+		ur.checked = (permissions & (1 << 8)) !== 0;
+		uw.checked = (permissions & (1 << 7)) !== 0;
+		ux.checked = (permissions & (1 << 6)) !== 0;
+		gr.checked = (permissions & (1 << 5)) !== 0;
+		gw.checked = (permissions & (1 << 4)) !== 0;
+		gx.checked = (permissions & (1 << 3)) !== 0;
+		or.checked = (permissions & (1 << 2)) !== 0;
+		ow.checked = (permissions & (1 << 1)) !== 0;
+		ox.checked = (permissions & (1 << 0)) !== 0;
+	}
+</script>
